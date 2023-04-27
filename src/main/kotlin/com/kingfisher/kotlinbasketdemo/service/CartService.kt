@@ -2,6 +2,7 @@ package com.kingfisher.kotlinbasketdemo.service
 
 import com.commercetools.api.models.cart.Cart
 import com.commercetools.api.models.cart.LineItem
+import com.kingfisher.kotlinbasketdemo.data.Address
 
 interface CartService {
 
@@ -64,9 +65,18 @@ interface CartService {
 
     fun addShippingAddress(
         cartId: String, cartVersion: Long,
-        key: String, firstName: String?, lastName: String?,
+        address: Address
+    ): Cart
+
+    fun addShippingAddressWithKey(cartId: String, cartVersion: Long, key: String, address: Address): Cart
+
+    fun addShippingAddress(
+        cartId: String, cartVersion: Long,
+        key: String, firstName: String?, lastName: String?, company: String?,
         streetNumber: String?, streetName: String?, city: String?, postalCode: String?, country: String?
     ): Cart
+
+    fun deleteCart(cartId: String, cartVersion: Long ): Cart
 
     /**
      * Print out the cart in all its glory...
