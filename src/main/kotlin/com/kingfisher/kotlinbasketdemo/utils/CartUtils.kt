@@ -1,6 +1,8 @@
 package com.kingfisher.kotlinbasketdemo.utils
 
 import com.commercetools.api.models.cart.ItemShippingDetails
+import com.commercetools.api.models.cart.MethodTaxRate
+import com.commercetools.api.models.cart.MethodTaxedPrice
 import com.commercetools.api.models.cart.ShippingInfo
 import com.commercetools.api.models.cart.TaxedItemPrice
 import com.commercetools.api.models.cart.TaxedPrice
@@ -77,4 +79,28 @@ fun printItemShipping(details: ItemShippingDetails?): String {
             append(" ${it.shippingMethodKey} - ${it.quantity} ${it.addressKey} ")
         }
     }.toString()
+}
+
+fun printMethodTaxedPrice(rates: List<MethodTaxedPrice>? ): String {
+    if( rates == null ) {
+        return ""
+    } else {
+        return StringBuffer().apply {
+            rates.forEach {
+                append(" shipping key: ${it.shippingMethodKey}, taxedPrice: ${ printPrice( it.taxedPrice ) } ")
+            }
+        }.toString()
+    }
+}
+
+fun printMethodTaxRate(rates: List<MethodTaxRate>? ): String {
+    if( rates == null ) {
+        return ""
+    } else {
+        return StringBuffer().apply {
+            rates.forEach {
+                append("shipping key: ${it.shippingMethodKey}, taxRate: ${it.taxRate.id} ")
+            }
+        }.toString()
+    }
 }

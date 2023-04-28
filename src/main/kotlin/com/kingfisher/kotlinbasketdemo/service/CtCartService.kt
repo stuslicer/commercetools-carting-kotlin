@@ -406,6 +406,10 @@ class CtCartService(
         return if (candidates.isEmpty()) null else candidates[0]
     }
 
+    fun resetCartBeforePromotions(cart: Cart, cartVersion: Long): Cart {
+        return cart
+    }
+
     override fun deleteCart(cartId: String, cartVersion: Long): Cart {
         val cart = apiRoot.carts()
             .withId(cartId)
@@ -504,6 +508,8 @@ class CtCartService(
                 println("${line}) Product: ${product.id} ${printLocalized(product.masterData.current.name)} - ${product.key},")
                 println("\t quantity: ${lineItem.quantity}, totalPrice: ${printPrice(lineItem.totalPrice)}, taxedPrice: ${printPrice(lineItem.taxedPrice)}  ");
                 println("\t\t ${ printItemShipping(lineItem.shippingDetails) }")
+                println("\t\t  taxedPricePortions: ${ printMethodTaxedPrice(lineItem.taxedPricePortions) }")
+//                println("\t\t ${ printMethodTaxRate(lineItem.perMethodTaxRate) }")
             }
             line++
         }
