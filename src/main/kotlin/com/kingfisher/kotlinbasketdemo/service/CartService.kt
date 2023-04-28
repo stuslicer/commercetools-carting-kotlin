@@ -12,8 +12,18 @@ interface CartService {
      * @return
      */
     fun getCartById(cartId: String): Cart
+
+    /**
+     * Get a cart with the given id, returns it as a String.
+     * @param cartId
+     * @param prettyPrint
+     * @return
+     */
     fun getCartByIdAsString(cartId: String, prettyPrint: Boolean = true): String
 
+    /**
+     * Create a new cart with some sensible defaults.
+     */
     fun createCart() : Cart
 
     /**
@@ -63,11 +73,28 @@ interface CartService {
      */
     fun getItemFromCart(cartId: String, productId: String, variantId: Long): LineItem?
 
+    /**
+     * Add the shipping address.
+     * This probably only makes sense when a cart has a single shipping address.
+     * @param cartId
+     * @param cartVersion
+     * @param address
+     * @return
+     */
     fun addShippingAddress(
         cartId: String, cartVersion: Long,
         address: Address
     ): Cart
 
+    /**
+     * Add the shipping address. The given key overrides the key in the Address object.
+     * This probably only makes sense when a cart has a single shipping address.
+     * @param cartId
+     * @param cartVersion
+     * @param key
+     * @param address
+     * @return
+     */
     fun addShippingAddressWithKey(cartId: String, cartVersion: Long, key: String, address: Address): Cart
 
     fun addShippingAddress(
@@ -76,6 +103,12 @@ interface CartService {
         streetNumber: String?, streetName: String?, city: String?, postalCode: String?, country: String?
     ): Cart
 
+    /**
+     * Delete the cart, the whole kit and kaboodle.
+     * @param cartId
+     * @param cartVersion
+     * @return
+     */
     fun deleteCart(cartId: String, cartVersion: Long ): Cart
 
     /**

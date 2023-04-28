@@ -9,6 +9,7 @@ import com.commercetools.api.models.shipping_method.ShippingMethodResourceIdenti
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.kingfisher.kotlinbasketdemo.data.Address
 import com.kingfisher.kotlinbasketdemo.data.DataStore
+import com.kingfisher.kotlinbasketdemo.data.FulfilmentOption
 import com.kingfisher.kotlinbasketdemo.exception.InvalidCartId
 import com.kingfisher.kotlinbasketdemo.utils.*
 import io.vrap.rmf.base.client.error.NotFoundException

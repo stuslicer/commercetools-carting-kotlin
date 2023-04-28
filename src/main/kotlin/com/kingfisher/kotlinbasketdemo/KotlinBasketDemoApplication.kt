@@ -5,7 +5,6 @@ import com.commercetools.api.models.cart.Cart
 import com.kingfisher.kotlinbasketdemo.data.DataStore
 import com.kingfisher.kotlinbasketdemo.exception.InvalidProductId
 import com.kingfisher.kotlinbasketdemo.service.CtCartService
-import com.kingfisher.kotlinbasketdemo.service.FulfilmentOption
 import com.kingfisher.kotlinbasketdemo.service.ProductService
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication

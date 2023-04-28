@@ -1,4 +1,4 @@
-package com.kingfisher.kotlinbasketdemo.service
+package com.kingfisher.kotlinbasketdemo.data
 
 enum class FulfilmentOption {
 
