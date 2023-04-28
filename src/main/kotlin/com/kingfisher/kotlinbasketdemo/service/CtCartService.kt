@@ -111,30 +111,23 @@ class CtCartService(
         val addressToUse = address ?: dataStore.addresses()[0]
         println("Address to use: ${address}")
 
-        var originalCart = getCartById(cartId)!!
-
-        val actionsToPerform: MutableList<CartUpdateAction> = ArrayList()
-
-        println("Creating adding a new line for the product, variant and quantity")
-        val whatIsThis: CartAddLineItemAction = CartUpdateActionBuilder.of()
-            .addLineItemBuilder()
-            .productId(productId)
-            .variantId(variant)
-            .quantity(quantity)
-            .build()
-
-        actionsToPerform.add(whatIsThis)
-
-        println("Adding a new address for the fulfilment option address")
         val addressKey = when (fulfilmentOption) {
             FulfilmentOption.DELIVERY, FulfilmentOption.DSV -> "USER_DELIVERY"
             else -> "STORE_ADDRESS"
         }
         println("Address key $addressKey")
 
-        var shippingKey = fulfilmentOption.toString()
+        val shippingKey = fulfilmentOption.toString()
 
-        // 1. At cart level add the address with the appropriate key - this will be referenced by the line item
+
+        var originalCart = getCartById(cartId)!!
+        val itemFromCart = getItemFromCart(cartId, productId, variant)
+        val newLineItem = itemFromCart == null
+
+        val actionsToPerform: MutableList<CartUpdateAction> = ArrayList()
+
+        // Step:
+        // At cart level add the address with the appropriate key - this will be referenced by the line item
         //       addShippingItemAddress - https://docs.commercetools.com/api/projects/carts#add-itemshippingaddress
         //
         val itemShippingItemAddressActions = updateItemShoppingAddressIfRequired(originalCart,
@@ -144,8 +137,8 @@ class CtCartService(
         actionsToPerform.addAll(itemShippingItemAddressActions)
         println("Created a item shipping address with key ${addressKey}")
 
-
-        // 2. At the cart level add the shipping method with the appropriate key
+        // Step:
+        // At the cart level add the shipping method with the appropriate key
         //        addShippingMwthod - https://docs.commercetools.com/api/projects/carts#add-shippingmethod
 
         val shippingMethodIdRef: ShippingMethodResourceIdentifier = ShippingMethodResourceIdentifierBuilder.of()
@@ -162,6 +155,65 @@ class CtCartService(
 
         actionsToPerform.addAll(shippingMethodUpdateActions)
 
+        if( newLineItem ) {
+
+            // one per fulfilment option
+            val shippingTargetHome = ItemShippingTargetBuilder.of()
+                .shippingMethodKey( shippingKey )
+                .quantity(quantity)
+                .addressKey(addressKey)
+                .build()
+
+            // add or plus a target for each fulfilment option
+            val shippingDetailsDraft = ItemShippingDetailsDraftBuilder.of()
+                .targets(shippingTargetHome)
+                .build()
+
+            println("Creating adding a new line for the product, variant and quantity")
+            val addLineItemAction: CartAddLineItemAction = CartUpdateActionBuilder.of()
+                .addLineItemBuilder()
+                .productId(productId)
+                .variantId(variant)
+                .quantity(quantity)
+                .shippingDetails(shippingDetailsDraft)
+                .build()
+
+            actionsToPerform.add(addLineItemAction)
+
+        } else {
+            val originalShippingTarget = itemFromCart!!.shippingDetails.targets.find { it.shippingMethodKey == fulfilmentOption.toString() }
+            val newQuantity = if( originalShippingTarget != null ) {
+                originalShippingTarget.quantity + quantity
+            } else {
+                quantity
+            }
+
+            // UPDATE LINE ITEM - total quantity
+
+            // one per fulfilment option
+            val shippingTargetHome = ItemShippingTargetBuilder.of()
+                .shippingMethodKey( shippingKey )
+                .quantity(newQuantity)
+                .addressKey(addressKey)
+                .build()
+
+            // add or plus a target for each fulfilment option
+            val shippingDetailsDraft = ItemShippingDetailsDraftBuilder.of()
+                .targets(shippingTargetHome)
+                .build()
+
+            val setLineItemAction = CartSetLineItemShippingDetailsActionBuilder.of()
+                .lineItemId(itemFromCart.id)
+                .shippingDetails(shippingDetailsDraft)
+                .build()
+
+
+
+        }
+
+        println("Adding a new address for the fulfilment option address")
+
+
         // Run these actions to add the shipping line and add shipping information at top level of cart.
         val cartLevelUpdate = CartUpdateBuilder.of()
             .version(cartVersion)
@@ -170,49 +222,7 @@ class CtCartService(
         var updatedCart = performUpdateCart(cartId, cartLevelUpdate)
         var newCartVersion = updatedCart.version
 
-//        return updatedCart
-
-        val itemFromCart = getItemFromCart(cartId, productId, variant)
-
-
-        if (itemFromCart == null) {
-            // ended early 11 Problem
-            return updatedCart
-        }
-
-        val originalShippingTarget = itemFromCart.shippingDetails?.targets?.find { it.shippingMethodKey == fulfilmentOption.toString() }
-        val newQuantity = if( originalShippingTarget != null ) {
-            originalShippingTarget.quantity + quantity
-        } else {
-            quantity
-        }
-
-        //
-        // 3. At the line item level add the shipping details - which must include the shipping method, the address and the quantity
-
-        // one per fulfilment option
-        val shippingTargetHome = ItemShippingTargetBuilder.of()
-            .shippingMethodKey( shippingKey )
-            .quantity(newQuantity)
-            .addressKey(addressKey)
-            .build()
-
-        // add or plus a target for each fulfilment option
-        val shippingDetailsDraft = ItemShippingDetailsDraftBuilder.of()
-            .targets(shippingTargetHome)
-            .build()
-
-        val setLineItemAction = CartSetLineItemShippingDetailsActionBuilder.of()
-            .lineItemId(itemFromCart.id)
-            .shippingDetails(shippingDetailsDraft)
-            .build()
-
-        val cartUpdate = CartUpdateBuilder.of()
-            .version(newCartVersion)
-            .plusActions(setLineItemAction)
-            .build()
-
-        return performUpdateCart(cartId, cartUpdate)
+        return updatedCart
     }
 
     /**
