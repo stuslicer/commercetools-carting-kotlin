@@ -1,5 +1,6 @@
 package com.kingfisher.kotlinbasketdemo.utils
 
+import com.commercetools.api.models.cart.ItemShippingDetails
 import com.commercetools.api.models.cart.ShippingInfo
 import com.commercetools.api.models.cart.TaxedItemPrice
 import com.commercetools.api.models.cart.TaxedPrice
@@ -9,7 +10,13 @@ import com.commercetools.api.models.common.LocalizedString
 import com.commercetools.api.models.common.LocalizedStringEntry
 import java.lang.StringBuilder
 
-class CartUtils {
+fun equalsOrBothNull(left: Any?, right: Any?) : Boolean {
+    when {
+        left != null && right != null && left == right -> true
+        left == null && right == null -> true
+        else -> false
+    }
+    return false
 }
 
 fun printPrice(money: CentPrecisionMoney): String? {
@@ -48,21 +55,34 @@ fun printLocalized(localizedString: LocalizedString?): String? {
 
 fun printAddress( address: Address? ) : String?{
     if( address != null ) {
-        var sb = StringBuilder()
-        sb.append("key: ${address.key}, ")
-        if( address.firstName != null ) {
-            sb.append("first: ${address.firstName} ${address.lastName}, ")
+        var sb = StringBuilder().apply {
+            append("key: ${address.key}, ")
+            if (address.firstName != null) {
+                append("name: ${address.firstName} ${address.lastName}, ")
+            }
+            if (address.company != null) {
+                append("company: ${address.company}, ")
+            }
+            append("details: ${address.streetNumber} ${address.firstName} ${address.city} ${address.postalCode} country: ${address.country}")
         }
-        if( address.company != null ) {
-            sb.append("company: ${address.company}, ")
-        }
-        sb.append("address: ${address.streetNumber} ${address.firstName} ${address.city} ${address.postalCode} country: ${address.country}")
         return sb.toString()
     }
     return ""
 }
 
 fun printShippingInfo(shippingInfo: ShippingInfo): String {
-    return "name: ${shippingInfo.shippingMethodName} price: ${printPrice( shippingInfo.price )}, " +
-            "taxedPrice: ${printPrice( shippingInfo.taxedPrice )} shippingmethodId: ${shippingInfo.shippingMethod.id}"
+    return "name (shipping method): ${shippingInfo.shippingMethodName} price: ${printPrice( shippingInfo.price )}, " +
+            "taxedPrice: ${printPrice( shippingInfo.taxedPrice )} id (shipping method): ${shippingInfo.shippingMethod.id}"
+}
+
+fun printItemShipping(details: ItemShippingDetails?): String {
+    if( details == null ) {
+        return ""
+    }
+    return StringBuffer().apply {
+        append(" targets: ")
+        details.targets.forEach {
+            append(" ${it.shippingMethodKey} - ${it.quantity} ${it.addressKey} ")
+        }
+    }.toString()
 }

@@ -64,10 +64,8 @@ class Runner(
 		var cart: Cart
 
 		// 1. Create Cart
-		cart = createCart("106fa62b-ebe6-429c-9400-b9a73c0f0249")
-
+		cart = createCart("58fa0376-2575-416b-be45-8120b042e325")
 		val CART_ID: String = cart.id
-//		val CART_ID: String = "507185c3-f493-4a5c-b205-a20361dcc694"
 
 		// 2. Select cart
 		cart  = cartService.getCartById( CART_ID )
